@@ -58,13 +58,13 @@ while True:
   
   if not btnA.value:
     send_packet = 'Sent Button A!'
-    rfm9x.send(bytes(send_packet))
+    rfm9x.send(bytes(send_packet, "ascii"))
   elif not btnB.value:
     send_packet = 'Sent Button B!'
-    rfm9x.send(bytes(send_packet))
+    rfm9x.send(bytes(send_packet, "ascii"))
   elif not btnC.value:
     send_packet = 'Sent Button C!'
-    rfm9x.send(bytes(send_packet))
+    rfm9x.send(bytes(send_packet, "ascii"))
   
   if not recv_packet is recv_prev_packet:
     display.text(recv_prev_packet, 25, 0, 1)
