@@ -58,6 +58,7 @@ while True:
     # Display the packet text and rssi
     recv_packet = str(packet, "ascii")
     print("RX: "+recv_packet)
+    rfm9x.send(bytes("snr: "rfm9x.last_snr+" rssi: "+rfm9x.last_rssi, "ascii"))
   
   if not btnA.value:
     send_packet = 'Sent Button A!'
