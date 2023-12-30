@@ -47,6 +47,7 @@ def UpdateDisplay():
   display.text(sent_prev_packet, 25, 10, 1)
   display.show()
 
+UpdateDisplay()
 while True:
   # check for packet rx
   packet = None
