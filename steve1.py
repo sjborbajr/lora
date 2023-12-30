@@ -58,7 +58,7 @@ while True:
     if recv_packet[:5] is "ACK: ":
       print(recv_packet)
     else:
-      rfm9x.send(bytes("ACK: snr: "+rfm9x.last_snr+" rssi: "+rfm9x.last_rssi, "ascii"))
+      rfm9x.send(bytes("ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi), "ascii"))
       print("RX: "+recv_packet)
       recv_prev_packet = recv_packet
       UpdateDisplay()
