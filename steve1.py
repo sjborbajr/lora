@@ -70,15 +70,18 @@ while True:
   packet = None
   packet = rfm9x.receive()
   if packet is not None:
-    recv_packet = str(packet, "ascii")
-    if recv_packet[:5] == "ACK: ":
-      print(recv_packet+"\r")
-    else:
-      print("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)+"\r")
-      UpdateDisplay()
-      time.sleep(0.6)
-      temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
-      rfm9x.send(bytes(temp, "ascii"))
+    try:
+      recv_packet = str(packet, "ascii")
+      if recv_packet[:5] == "ACK: ":
+        print(recv_packet+"\r")
+      else:
+        print("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)+"\r")
+        UpdateDisplay()
+        time.sleep(0.6)
+        temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
+        rfm9x.send(bytes(temp, "ascii"))
+    except UnicodeDecodeError as e:
+      print(f"Error decoding packet: {e}")
 
   if not btnA.value:
     send_key("A")
@@ -89,13 +92,9 @@ while True:
 
   while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
     char = sys.stdin.read(1)
-    if char == 'a':
-      send_key("A")
-    elif char == 'b':
-      send_key("B")
-    elif char == 'c':
-      send_key("C")
-    elif char == 'x':
+    if char == 'x':
       exit()
+    else:
+      send_key(char)
 
   time.sleep(0.1)
