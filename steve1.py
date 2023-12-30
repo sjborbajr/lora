@@ -6,6 +6,9 @@ import select
 import board
 import adafruit_ssd1306
 import adafruit_rfm9x
+import termios
+import tty
+import atexit
 
 # Button A
 btnA = DigitalInOut(board.D5)
@@ -39,6 +42,12 @@ send_packet = "none"
 reset_pin = DigitalInOut(board.D4)
 display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
 
+def set_raw_mode(fd):
+  # Save the terminal settings
+  original_settings = termios.tcgetattr(fd)
+  atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, original_settings))
+  tty.setraw(fd)
+
 def UpdateDisplay():
   display.fill(0)
   display.text('RX: ', 0, 0, 1)
@@ -52,8 +61,9 @@ def send_key(key):
   send_packet = 'Sent Button ' + key + '!'
   rfm9x.send(bytes(send_packet, "ascii"))
   UpdateDisplay()
-  print("TX: " + send_packet)
+  print("TX: " + send_packet+"\r")
 
+set_raw_mode(sys.stdin.fileno())
 UpdateDisplay()
 while True:
   # check for packet rx
@@ -62,9 +72,9 @@ while True:
   if packet is not None:
     recv_packet = str(packet, "ascii")
     if recv_packet[:5] == "ACK: ":
-      print(recv_packet)
+      print(recv_packet+"\r")
     else:
-      print("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi))
+      print("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)+"\r")
       UpdateDisplay()
       time.sleep(0.6)
       temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
@@ -85,5 +95,7 @@ while True:
       send_key("B")
     elif char == 'c':
       send_key("C")
+    elif char == 'x':
+      exit()
 
   time.sleep(0.1)
