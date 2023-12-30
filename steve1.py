@@ -37,6 +37,8 @@ rfm9x.tx_power = 23
 #The transmit power in dBm. Can be set to a value from 5 to 23 for high power devices (RFM95/96/97/98, high_power=True) or -1 to 14 for low power devices. Only integer power levels are actually set (i.e. 12.5 will result in a value of 12 dBm). The actual maximum setting for high_power=True is 20dBm but for values > 20 the PA_BOOST will be enabled resulting in an additional gain of 3dBm. The actual setting is reduced by 3dBm. The reported value will reflect the reduced setting.
 recv_prev_packet = "none"
 sent_prev_packet = "none"
+recv_packet = "none"
+send_packet = "none"
 
 # 128x32 OLED Display
 reset_pin = DigitalInOut(board.D4)
@@ -55,6 +57,7 @@ while True:
   if not packet is None:
     # Display the packet text and rssi
     recv_packet = str(packet, "ascii")
+    print("RX: "+recv_packet)
   
   if not btnA.value:
     send_packet = 'Sent Button A!'
@@ -67,13 +70,22 @@ while True:
     rfm9x.send(bytes(send_packet, "ascii"))
   
   if not recv_packet is recv_prev_packet:
-    display.text(recv_prev_packet, 25, 0, 1)
-    display.show()
     recv_prev_packet = recv_packet
-
-  if not send_packet is sent_prev_packet:
+    display.fill(0)
+    display.text('RX: ', 0, 0, 1)
+    display.text(recv_prev_packet, 25, 0, 1)
+    display.text('TX: ', 0, 10, 1)
     display.text(sent_prev_packet, 25, 10, 1)
     display.show()
+
+  if not send_packet is sent_prev_packet:
     sent_prev_packet = send_packet
+    display.fill(0)
+    display.text('RX: ', 0, 0, 1)
+    display.text(recv_prev_packet, 25, 0, 1)
+    display.text('TX: ', 0, 10, 1)
+    display.text(sent_prev_packet, 25, 10, 1)
+    display.show()
+    print("TX: "+send_packet)
 
   time.sleep(0.1)
