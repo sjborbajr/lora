@@ -55,10 +55,13 @@ while True:
   if not packet is None:
     # Display the packet text and rssi
     recv_packet = str(packet, "ascii")
-    if recv_packet[:5] is "ACK: ":
+    print('"'+recv_packet[:5]+'"')
+    if recv_packet[:5] == "ACK: ":
       print(recv_packet)
     else:
-      rfm9x.send(bytes("ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi), "ascii"))
+      time.sleep(0.1)
+      temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi
+      rfm9x.send(bytes(temp, "ascii"))
       print("RX: "+recv_packet)
       recv_prev_packet = recv_packet
       UpdateDisplay()
