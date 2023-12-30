@@ -30,10 +30,8 @@ RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
 rfm9x.tx_power = 23
-recv_prev_packet = "none"
-sent_prev_packet = "none"
-recv_packet = "none"
-send_packet = "none"
+
+global send_packet, recv_packet, sent_prev_packet, recv_prev_packet
 
 # 128x32 OLED Display
 reset_pin = DigitalInOut(board.D4)
@@ -47,6 +45,13 @@ def UpdateDisplay():
   display.text(sent_prev_packet, 25, 10, 1)
   display.show()
 
+def send_key(key):
+  send_packet = 'Sent Button '+key+'!'
+  rfm9x.send(bytes(send_packet, "ascii"))
+
+keyboard.on_press_key('a', send_key("A"))
+keyboard.on_press_key('b', send_key("B"))
+keyboard.on_press_key('c', send_key("C"))
 UpdateDisplay()
 while True:
   # check for packet rx
@@ -58,22 +63,19 @@ while True:
     if recv_packet[:5] == "ACK: ":
       print(recv_packet)
     else:
-      time.sleep(0.5)
-      temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
-      rfm9x.send(bytes(temp, "ascii"))
       print("RX: "+recv_packet)
       recv_prev_packet = recv_packet
       UpdateDisplay()
+      time.sleep(0.5)
+      temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
+      rfm9x.send(bytes(temp, "ascii"))
 
-  if not btnA.value or keyboard.is_pressed('a'):
-    send_packet = 'Sent Button A!'
-    rfm9x.send(bytes(send_packet, "ascii"))
-  elif not btnB.value or keyboard.is_pressed('b'):
-    send_packet = 'Sent Button B!'
-    rfm9x.send(bytes(send_packet, "ascii"))
-  elif not btnC.value or keyboard.is_pressed('c'):
-    send_packet = 'Sent Button C!'
-    rfm9x.send(bytes(send_packet, "ascii"))
+  if not btnA.value:
+    send_key("A")
+  elif not btnB.value:
+    send_key("B")
+  elif not btnC.value:
+    send_key("C")
   
   if not send_packet is sent_prev_packet:
     sent_prev_packet = send_packet
