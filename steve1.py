@@ -31,27 +31,33 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
 rfm9x.tx_power = 23
 
-global send_packet, recv_packet, sent_prev_packet, recv_prev_packet
+recv_prev_packet = "none"
+recv_packet = "none"
+send_packet = "none"
 
 # 128x32 OLED Display
 reset_pin = DigitalInOut(board.D4)
 display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
 
 def UpdateDisplay():
+  global recv_prev_packet
   display.fill(0)
   display.text('RX: ', 0, 0, 1)
   display.text(recv_prev_packet, 25, 0, 1)
   display.text('TX: ', 0, 10, 1)
-  display.text(sent_prev_packet, 25, 10, 1)
+  display.text(send_packet, 25, 10, 1)
   display.show()
 
-def send_key(key):
-  send_packet = 'Sent Button '+key+'!'
+def send_key(key,event):
+  global send_packet
+  send_packet = 'Sent Button ' + key + '!'
   rfm9x.send(bytes(send_packet, "ascii"))
+  UpdateDisplay()
+  print("TX: " + send_packet)
 
-keyboard.on_press_key('a', send_key("A"))
-keyboard.on_press_key('b', send_key("B"))
-keyboard.on_press_key('c', send_key("C"))
+keyboard.on_press_key('a', lambda e: send_key("A", e))
+keyboard.on_press_key('b', lambda e: send_key("B", e))
+keyboard.on_press_key('c', lambda e: send_key("C", e))
 UpdateDisplay()
 while True:
   # check for packet rx
@@ -66,20 +72,15 @@ while True:
       print("RX: "+recv_packet)
       recv_prev_packet = recv_packet
       UpdateDisplay()
-      time.sleep(0.5)
+      time.sleep(0.75)
       temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
       rfm9x.send(bytes(temp, "ascii"))
 
   if not btnA.value:
-    send_key("A")
+    send_key("A","")
   elif not btnB.value:
-    send_key("B")
+    send_key("B","")
   elif not btnC.value:
-    send_key("C")
-  
-  if not send_packet is sent_prev_packet:
-    sent_prev_packet = send_packet
-    UpdateDisplay()
-    print("TX: "+send_packet)
+    send_key("C","")
 
   time.sleep(0.1)
