@@ -61,7 +61,7 @@ def send_key(key):
   send_packet = 'Sent Button ' + key + '!'
   rfm9x.send(bytes(send_packet, "ascii"))
   with open("lora.log", "a") as log_file:
-    log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Send: {send_packet}\r\n")
+    log_file.write(f"Time: {timestamp}, {send_packet}\r\n")
   UpdateDisplay()
   print("TX: " + send_packet+"\r")
 
@@ -93,11 +93,11 @@ while True:
         log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet\r\n")
 
   if not btnA.value:
-    send_key("A")
+    send_key("btnA")
   elif not btnB.value:
-    send_key("B")
+    send_key("btnB")
   elif not btnC.value:
-    send_key("C")
+    send_key("btnC")
 
   while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
     char = sys.stdin.read(1)
