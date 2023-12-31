@@ -31,10 +31,13 @@ def set_raw_mode(fd):
 def UpdateDisplay():
   global recv_packet, send_packet
   display.fill(0)
-  display.text('RX: '+recv_packet, 0, 0, 1)
-  display.text('TX: '+send_packet, 0, 11, 1)
+  text = 'RX: '+recv_packet
+  display.text(text, 0, 0, 1)
+  text = 'TX: '+send_packet
+  display.text(text, 0, 11, 1)
   if rfm9x.last_snr:
-    display.text("SNR"+str(rfm9x.last_snr)+" RSSI"+str(rfm9x.last_rssi), 0, 22, 1)
+    text = "SNR "+str(rfm9x.last_snr)+" RSSI "+str(rfm9x.last_rssi)
+    display.text(text, 0, 22, 1)
   else:
     display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 22, 1)
   display.show()
