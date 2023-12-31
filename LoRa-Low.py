@@ -14,7 +14,7 @@ import json
 #Global Variables
 SETTINGS_FILE = "data/settings.json"
 recv_packet = "none"
-send_packet = "none"
+sent_packet = "none"
 
 
 def load_settings():
@@ -30,19 +30,19 @@ def set_raw_mode(fd):
 
 def UpdateDisplay():
   display.fill(0)
-  display.text(f'RX: {recv_packet}', 1, 0, 1)
-  display.text(f'TX: {send_packet}', 12, 11, 1)
+  display.text(f'RX: {recv_packet}', 0, 0, 1)
+  display.text(f'TX: {sent_packet}', 0, 12, 1)
   if rfm9x.last_snr:
     display.text("SNR "+str(rfm9x.last_snr)+" RSSI "+str(rfm9x.last_rssi), 0, 23, 1)
   else:
-    display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 22, 1)
+    display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 24, 1)
   display.show()
 
 def send_packet(key):
-  global send_packet
-  send_packet = 'Sent Button ' + key + '!'
-  rfm9x.send(bytes(send_packet, "ascii"))
-  log("TX: " + send_packet)
+  global sent_packet
+  sent_packet = 'Sent Button ' + key + '!'
+  rfm9x.send(bytes(sent_packet, "ascii"))
+  log("TX: " + sent_packet)
   UpdateDisplay()
 
 def log(text):
