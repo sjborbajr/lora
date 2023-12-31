@@ -20,7 +20,7 @@ def save_settings(settings):
     json.dump(settings, f, indent=2)
 
 def check_for_updates(repo_owner, repo_name, last_commit):
-  api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits/master'
+  api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits/main'
   
   response = requests.get(api_url)
   
@@ -34,7 +34,7 @@ def check_for_updates(repo_owner, repo_name, last_commit):
 
 def git_pull():
   subprocess.run(['git', 'fetch', '--all'])
-  subprocess.run(['git', 'reset', 'hard', 'origin/main'])
+  subprocess.run(['git', 'reset', '--hard', 'origin/main'])
   subprocess.run(['git', 'pull', '--ff-only'])
 
 def restart_service():
