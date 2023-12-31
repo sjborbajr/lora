@@ -37,10 +37,15 @@ def git_pull():
   subprocess.run(['git', 'reset', '--hard', 'origin/main'])
   subprocess.run(['git', 'pull', '--ff-only'])
 
-def restart_service():
-  subprocess.run(['sudo', 'systemctl', 'restart', 'your-service-name'])
+def stop_screen(name):
+  subprocess.run(['screen', '-X', '-S', name, 'quit'])
 
-  #screen -dmS LoRa -c /opt/lora/LoRa.screen
+def start_screen(name, command):
+    subprocess.run(['screen', '-dmLS', name, '/bin/bash', command])
+
+def check_screen(name):
+    result = subprocess.run(['screen', '-ls', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return result.returncode == 0 and name in result.stdout.decode('utf-8')
 
 if __name__ == "__main__":
   while True:
@@ -56,7 +61,10 @@ if __name__ == "__main__":
 
       settings['last_commit'] = latest_commit_sha
       save_settings(settings)
-    
-      #restart_service(settings['service'])
+
+      stop_screen("LoRa")
+
+    if not check_screen:
+      start_screen("LoRa","/opt/lora/git/LoRa-Low.sh")
 
     time.sleep(60)
