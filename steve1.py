@@ -50,10 +50,12 @@ def set_raw_mode(fd):
 
 def UpdateDisplay():
   display.fill(0)
-  display.text('RX: ', 0, 0, 1)
-  display.text(recv_packet, 25, 0, 1)
-  display.text('TX: ', 0, 10, 1)
-  display.text(send_packet, 25, 10, 1)
+  display.text('RX: '+recv_packet, 0, 0, 1)
+  display.text('TX: '+send_packet, 0, 10, 1)
+  if rfm9x.last_snr:
+    display.text("SNR"+str(rfm9x.last_snr)+" RSSI"+str(rfm9x.last_rssi), 0, 22, 1)
+  else:
+    display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-=", 0, 22, 1)
   display.show()
 
 def send_key(key):
@@ -64,12 +66,15 @@ def send_key(key):
   UpdateDisplay()
 
 def log(text):
-  print("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+", "+text+"\r")
+  print("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r")
   with open("lora.log", "a") as log_file:
-    log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+", "+text+"\r\n")
+    log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r\n")
 
-def save_raw(packet):
-  with open(time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt", "wb") as pkt_file:
+def save_raw(packet,tag):
+  filename="raw_packets/"+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt"
+  if tag:
+    filename=tag+"-"+filename
+  with open(filename, "wb") as pkt_file:
     pkt_file.write(packet)
 
 log("Program Started")
@@ -81,9 +86,9 @@ while True:
   packet = None
   packet = rfm9x.receive()
   if packet is not None:
-    save_raw(packet)
     try:
       recv_packet = str(packet, "ascii")
+      save_raw(packet,"ASCII-")
       log("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi))
       if not recv_packet[:5] == "ACK: ":
         UpdateDisplay()
@@ -92,6 +97,7 @@ while True:
         temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
         rfm9x.send(bytes(temp, "ascii"))
     except UnicodeDecodeError as e:
+      save_raw(packet,"ERR-")
       print(f"Error decoding packet: {e}")
       log(f"RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet")
 
