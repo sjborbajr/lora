@@ -19,13 +19,12 @@ def save_settings(settings):
   with open(SETTINGS_FILE, 'w') as f:
     json.dump(settings, f, indent=2)
 
-def check_for_updates(repo_owner, repo_name, last_commit):
-  api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits/main'
-  
+def check_for_updates(owner, name, last, branch = 'main'):
+  #get the sha of the latest commit, if it doesn't match last, return sha, otherwise do nothing
+  api_url = f'https://api.github.com/repos/{owner}/{name}/commits/{branch}'
   response = requests.get(api_url)
-  
   if response.status_code == 200:
-    if last_commit != response.json()['sha']:
+    if last != response.json()['sha']:
       return response.json()['sha']
     return None
   else:
