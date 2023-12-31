@@ -119,7 +119,7 @@ while True:
   elif not btnC.value:
     send_packet("btnC")
 
-  #check for script console input
+  #check for script console input and xmit
   while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
     char = sys.stdin.read(1)
     if char == 'x':
