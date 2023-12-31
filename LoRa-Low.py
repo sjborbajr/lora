@@ -70,10 +70,8 @@ def log(text):
   with open("lora.log", "a") as log_file:
     log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r\n")
 
-def save_raw(packet,tag):
-  filename="raw_packets/"+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt"
-  if tag:
-    filename=tag+"-"+filename
+def save_raw(packet,tag = ""):
+  filename="raw_packets/"+tag+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt"
   with open(filename, "wb") as pkt_file:
     pkt_file.write(packet)
 
