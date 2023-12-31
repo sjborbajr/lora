@@ -54,8 +54,8 @@ if __name__ == "__main__":
     repo_name = settings.get('repo_name', '')
     last_commit = settings.get('last_commit', '')
     
+    #Check git for updates,  if exists, download and kill script to allow restart to start new code
     latest_commit_sha = check_for_updates(repo_owner, repo_name, last_commit)
-    
     if latest_commit_sha:
       git_pull()
 
@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
       stop_screen("LoRa")
 
+    # restart
     if not check_screen("LoRa"):
       start_screen("LoRa","/opt/lora/git/LoRa-Low.sh")
 
