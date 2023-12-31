@@ -29,15 +29,11 @@ def set_raw_mode(fd):
   tty.setraw(fd)
 
 def UpdateDisplay():
-  global recv_packet, send_packet
   display.fill(0)
-  text = f'RX: '+recv_packet
-  display.text(text, 0, 0, 1)
-  text = f'TX: '+send_packet
-  display.text(text, 0, 11, 1)
+  display.text(f'RX: {recv_packet}', 1, 0, 1)
+  display.text(f'TX: {send_packet}', 12, 11, 1)
   if rfm9x.last_snr:
-    text = f"SNR "+str(rfm9x.last_snr)+" RSSI "+str(rfm9x.last_rssi)
-    display.text(text, 0, 22, 1)
+    display.text("SNR "+str(rfm9x.last_snr)+" RSSI "+str(rfm9x.last_rssi), 0, 23, 1)
   else:
     display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 22, 1)
   display.show()
