@@ -60,6 +60,8 @@ def send_key(key):
   global send_packet
   send_packet = 'Sent Button ' + key + '!'
   rfm9x.send(bytes(send_packet, "ascii"))
+  with open("lora.log", "a") as log_file:
+    log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Send: {send_packet}\r\n")
   UpdateDisplay()
   print("TX: " + send_packet+"\r")
 
@@ -70,8 +72,13 @@ while True:
   packet = None
   packet = rfm9x.receive()
   if packet is not None:
+    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+    with open(timestamp+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt", "wb") as pkt_file:
+      pkt_file.write(packet)
     try:
       recv_packet = str(packet, "ascii")
+      with open("lora.log", "a") as log_file:
+        log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Payload: {recv_packet}\r\n")
       if recv_packet[:5] == "ACK: ":
         print(recv_packet+"\r")
       else:
@@ -82,6 +89,8 @@ while True:
         rfm9x.send(bytes(temp, "ascii"))
     except UnicodeDecodeError as e:
       print(f"Error decoding packet: {e}")
+      with open("lora.log", "a") as log_file:
+        log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet\r\n")
 
   if not btnA.value:
     send_key("A")
