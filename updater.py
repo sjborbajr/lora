@@ -41,11 +41,11 @@ def stop_screen(name):
   subprocess.run(['screen', '-X', '-S', name, 'quit'])
 
 def start_screen(name, command):
-    subprocess.run(['screen', '-dmLS', name, '/bin/bash', command])
+  subprocess.run(['screen', '-dmLS', name, '/bin/bash', command])
 
 def check_screen(name):
-    result = subprocess.run(['screen', '-ls', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return result.returncode == 0 and name in result.stdout.decode('utf-8')
+  result = subprocess.run(['screen', '-ls', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  return result.returncode == 0 and name in result.stdout.decode('utf-8')
 
 if __name__ == "__main__":
   while True:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
       stop_screen("LoRa")
 
-    if not check_screen:
+    if not check_screen("LoRa"):
       start_screen("LoRa","/opt/lora/git/LoRa-Low.sh")
 
     time.sleep(60)
