@@ -40,6 +40,8 @@ def git_pull():
 def restart_service():
   subprocess.run(['sudo', 'systemctl', 'restart', 'your-service-name'])
 
+  #screen -dmS LoRa -c /opt/lora/LoRa.screen
+
 if __name__ == "__main__":
   while True:
     settings = load_settings()
