@@ -43,7 +43,7 @@ reset_pin = DigitalInOut(board.D4)
 display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
 
 def set_raw_mode(fd):
-  # Save the terminal settings
+  # Save the terminal settings, and register an exit to reset back
   original_settings = termios.tcgetattr(fd)
   atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, original_settings))
   tty.setraw(fd)
@@ -60,11 +60,20 @@ def send_key(key):
   global send_packet
   send_packet = 'Sent Button ' + key + '!'
   rfm9x.send(bytes(send_packet, "ascii"))
-  with open("lora.log", "a") as log_file:
-    log_file.write(f"Time: {timestamp}, {send_packet}\r\n")
+  log("TX: " + send_packet)
   UpdateDisplay()
-  print("TX: " + send_packet+"\r")
 
+def log(text):
+  print("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+", "+text+"\r")
+  with open("lora.log", "a") as log_file:
+    log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+", "+text+"\r\n")
+
+def save_raw(packet):
+  with open(time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt", "wb") as pkt_file:
+    pkt_file.write(packet)
+
+log("Program Started")
+atexit.register(log,"Program Stopped")
 set_raw_mode(sys.stdin.fileno())
 UpdateDisplay()
 while True:
@@ -72,26 +81,21 @@ while True:
   packet = None
   packet = rfm9x.receive()
   if packet is not None:
-    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
-    with open(timestamp+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt", "wb") as pkt_file:
-      pkt_file.write(packet)
+    save_raw(packet)
     try:
       recv_packet = str(packet, "ascii")
-      with open("lora.log", "a") as log_file:
-        log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Payload: {recv_packet}\r\n")
-      if recv_packet[:5] == "ACK: ":
-        print(recv_packet+"\r")
-      else:
-        print("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)+"\r")
+      log("RX: '"+recv_packet+"' snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi))
+      if not recv_packet[:5] == "ACK: ":
         UpdateDisplay()
+        #The other side isn't seeing the ACK with too shot of a delay here
         time.sleep(0.6)
         temp = "ACK: snr: "+str(rfm9x.last_snr)+" rssi: "+str(rfm9x.last_rssi)
         rfm9x.send(bytes(temp, "ascii"))
     except UnicodeDecodeError as e:
       print(f"Error decoding packet: {e}")
-      with open("lora.log", "a") as log_file:
-        log_file.write(f"Time: {timestamp}, RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet\r\n")
+      log(f"RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet")
 
+  #Check for button presses
   if not btnA.value:
     send_key("btnA")
   elif not btnB.value:
@@ -99,6 +103,7 @@ while True:
   elif not btnC.value:
     send_key("btnC")
 
+  #check for script console input
   while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
     char = sys.stdin.read(1)
     if char == 'x':
@@ -106,4 +111,5 @@ while True:
     else:
       send_key(char)
 
+  #min looptime
   time.sleep(0.1)
