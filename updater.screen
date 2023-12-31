@@ -1,4 +1,4 @@
 defutf8 on
 vbell off
 sessionname updater
-screen -t updater 1  /opt/lora/git/updater.sh
+screen -t updater 1  /bin/bash /opt/lora/git/updater.sh

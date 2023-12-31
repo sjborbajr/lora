@@ -1,4 +1,4 @@
 defutf8 on
 vbell off
 sessionname LoRa
-screen -t Low  1  /opt/lora/git/Lora-Low.sh
+screen -t Low  1  /bin/bash /opt/lora/git/LoRa-Low.sh
