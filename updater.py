@@ -35,7 +35,7 @@ def check_for_updates(repo_owner, repo_name, last_commit):
 def git_pull():
   subprocess.run(['git', 'fetch', '--all'])
   subprocess.run(['git', 'reset', 'hard', 'origin/main'])
-  subprocess.run(['git', 'pull'])
+  subprocess.run(['git', 'pull', '--ff-only'])
 
 def restart_service():
   subprocess.run(['sudo', 'systemctl', 'restart', 'your-service-name'])
