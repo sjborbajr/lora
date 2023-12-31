@@ -109,7 +109,7 @@ while True:
     except UnicodeDecodeError as e:
       save_raw(packet,"ERR-")
       print(f"Error decoding packet: {e}")
-      log(f"RSSI: {rfm9x.last_snr}, SNR: {rfm9x.last_snr}, Faild to Decode Packet")
+      log(f"RSSI: {rfm9x.last_rssi}, SNR: {rfm9x.last_snr}, Faild to Decode Packet")
 
   #Check for button presses
   if not btnA.value:
