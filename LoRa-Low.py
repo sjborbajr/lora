@@ -29,6 +29,7 @@ def set_raw_mode(fd):
   tty.setraw(fd)
 
 def UpdateDisplay():
+  global recv_packet, send_packet
   display.fill(0)
   display.text('RX: '+recv_packet, 0, 0, 1)
   display.text('TX: '+send_packet, 0, 11, 1)
