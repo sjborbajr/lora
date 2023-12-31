@@ -9,6 +9,53 @@ import adafruit_rfm9x
 import termios
 import tty
 import atexit
+import json
+
+#Global Variables
+SETTINGS_FILE = "data/settings.json"
+recv_packet = "none"
+send_packet = "none"
+
+
+def load_settings():
+  with open(SETTINGS_FILE, 'r') as f:
+    settings = json.load(f)
+  return settings
+
+def set_raw_mode(fd):
+  # Save the terminal settings, and register an exit to reset back
+  original_settings = termios.tcgetattr(fd)
+  atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, original_settings))
+  tty.setraw(fd)
+
+def UpdateDisplay():
+  display.fill(0)
+  display.text('RX: '+recv_packet, 0, 0, 1)
+  display.text('TX: '+send_packet, 0, 11, 1)
+  if rfm9x.last_snr:
+    display.text("SNR"+str(rfm9x.last_snr)+" RSSI"+str(rfm9x.last_rssi), 0, 22, 1)
+  else:
+    display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 22, 1)
+  display.show()
+
+def send_packet(key):
+  global send_packet
+  send_packet = 'Sent Button ' + key + '!'
+  rfm9x.send(bytes(send_packet, "ascii"))
+  log("TX: " + send_packet)
+  UpdateDisplay()
+
+def log(text):
+  print("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r")
+  with open("logs/LoRa-Low-"+time.strftime("%Y%m%d", time.localtime())+".log", "a") as log_file:
+    log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r\n")
+
+def save_raw(packet,tag = ""):
+  filename="raw_packets/"+tag+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)
+  with open(filename+".pkt", "wb") as pkt_file:
+    pkt_file.write(packet)
+
+settings = load_settings()
 
 # Button A
 btnA = DigitalInOut(board.D5)
@@ -32,48 +79,13 @@ i2c = busio.I2C(board.SCL, board.SDA)
 CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-rfm9x.tx_power = 23
-
-recv_packet = "none"
-send_packet = "none"
+rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, settings.get("frequency_mhz", 915.0))
+rfm9x.tx_power = settings.get("tx_power", 23)
+rfm9x.spreading_factor = settings.get("spreading_factor", 7)
 
 # 128x32 OLED Display
 reset_pin = DigitalInOut(board.D4)
 display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
-
-def set_raw_mode(fd):
-  # Save the terminal settings, and register an exit to reset back
-  original_settings = termios.tcgetattr(fd)
-  atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, original_settings))
-  tty.setraw(fd)
-
-def UpdateDisplay():
-  display.fill(0)
-  display.text('RX: '+recv_packet, 0, 0, 1)
-  display.text('TX: '+send_packet, 0, 10, 1)
-  if rfm9x.last_snr:
-    display.text("SNR"+str(rfm9x.last_snr)+" RSSI"+str(rfm9x.last_rssi), 0, 22, 1)
-  else:
-    display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-=", 0, 22, 1)
-  display.show()
-
-def send_key(key):
-  global send_packet
-  send_packet = 'Sent Button ' + key + '!'
-  rfm9x.send(bytes(send_packet, "ascii"))
-  log("TX: " + send_packet)
-  UpdateDisplay()
-
-def log(text):
-  print("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r")
-  with open("lora.log", "a") as log_file:
-    log_file.write("Time: "+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+", "+text+"\r\n")
-
-def save_raw(packet,tag = ""):
-  filename="raw_packets/"+tag+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())+"-snr-"+str(rfm9x.last_snr)+"-rssi-"+str(rfm9x.last_rssi)+".pkt"
-  with open(filename, "wb") as pkt_file:
-    pkt_file.write(packet)
 
 log("Program Started")
 atexit.register(log,"Program Stopped")
@@ -101,11 +113,11 @@ while True:
 
   #Check for button presses
   if not btnA.value:
-    send_key("btnA")
+    send_packet("btnA")
   elif not btnB.value:
-    send_key("btnB")
+    send_packet("btnB")
   elif not btnC.value:
-    send_key("btnC")
+    send_packet("btnC")
 
   #check for script console input
   while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
@@ -113,7 +125,6 @@ while True:
     if char == 'x':
       exit()
     else:
-      send_key(char)
+      send_packet(char)
 
-  #min looptime
   time.sleep(0.1)
