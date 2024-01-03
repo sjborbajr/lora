@@ -20,10 +20,11 @@ def load_settings():
     settings = json.load(f)
   return settings
 
-def send_pi_data_periodic():
+def send_pi_data_periodic(message):
   threading.Timer(interval, send_pi_data_periodic).start()
-  line1 = "Started periodic data sending..."
-  log(line1)
+  if not message == 'start':
+    line1 = "Periodic data send - "+time.strftime("%H-%M-%S", time.localtime())
+    log(line1)
   send_pi_data()
   UpdateDisplay()
 
@@ -93,7 +94,6 @@ rst = DigitalInOut(board.D25)
 reset_pin = DigitalInOut(board.D4)
 display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
 
-
 # Initialize ThingsNetwork configuration
 ttn_config = TTN(devaddr, nwkey, app, country='US')
 # Initialize lora object
@@ -103,7 +103,9 @@ log("Program Started")
 atexit.register(log,"Program Stopped")
 
 #start sending data
-send_pi_data_periodic()
+line1 = "Started periodic data sending..."
+log(line1)
+send_pi_data_periodic("start")
 
 while True:
   packet = None
