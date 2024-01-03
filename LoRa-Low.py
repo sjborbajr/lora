@@ -1,15 +1,16 @@
 import time
 import busio
 from digitalio import DigitalInOut, Direction, Pull
-import sys
-import select
 import board
 import adafruit_ssd1306
+import json
+import atexit
+
 import adafruit_rfm9x
+import sys
+import select
 import termios
 import tty
-import atexit
-import json
 
 #Global Variables
 SETTINGS_FILE = "data/settings.json"

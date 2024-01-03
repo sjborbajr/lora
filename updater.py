@@ -65,6 +65,6 @@ if __name__ == "__main__":
 
     # restart
     if not check_screen("LoRa"):
-      start_screen("LoRa","/opt/lora/git/LoRa-Low.sh")
+      start_screen("LoRa","/opt/lora/git/LoRa.sh")
 
     time.sleep(300)
