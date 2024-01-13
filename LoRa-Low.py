@@ -81,6 +81,8 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, get_settings("frequency_mhz", 915.0))
 rfm9x.tx_power = get_settings("tx_power", 23)
 rfm9x.spreading_factor = get_settings("spreading_factor", 7)
+rfm9x.signal_bandwidth = get_settings("signal_bandwidth", 125000)
+rfm9x.coding_rate = get_settings("coding_rate", 6)
 rfm9x.encryption_key = bytes.fromhex(get_settings("encryption_key","0123456789ABCDEF0123456789ABCDEF"))
 
 # 128x32 OLED Display
