@@ -14,9 +14,8 @@ import tty
 
 #Global Variables
 SETTINGS_FILE = "data/settings.json"
-recv_packet = "none"
-sent_packet = "none"
-
+Last_TX = "0000/00/00 00:00:00"
+Last_RX = "0000/00/00 00:00:00"
 
 def get_settings(item,default):
   with open(SETTINGS_FILE, 'r') as f:
@@ -31,19 +30,21 @@ def set_raw_mode(fd):
 
 def UpdateDisplay():
   display.fill(0)
-  display.text(f'RX: {recv_packet}', 0, 0, 1)
-  display.text(f'TX: {sent_packet}', 0, 12, 1)
+  display.text(f'Last TX: {Last_TX}', 0, 0, 1)
+  display.text(f'Last RX: {Last_RX}', 0, 12, 1)
   if rfm9x.last_snr:
     display.text("SNR "+str(rfm9x.last_snr)+" RSSI "+str(rfm9x.last_rssi), 0, 23, 1)
   else:
     display.text("-=-=-=-=-=-=-=-=-=-=-=-=-=-", 0, 24, 1)
   display.show()
 
-def send_packet(key):
-  global sent_packet
-  sent_packet = 'Sent Button ' + key + '!'
-  rfm9x.send(bytes(sent_packet, "ascii"))
-  log("TX: " + sent_packet)
+def send_packet(data):
+  # encrypt, cut into parts
+  rfm9x.send(data)
+
+  log("TX: <put something here>")
+  global Last_TX
+  Last_TX = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
   UpdateDisplay()
 
 def log(text):
@@ -81,6 +82,8 @@ spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, get_settings("frequency_mhz", 915.0))
 rfm9x.tx_power = get_settings("tx_power", 23)
 rfm9x.spreading_factor = get_settings("spreading_factor", 7)
+rfm9x.signal_bandwidth = get_settings("signal_bandwidth", 125000)
+rfm9x.coding_rate = get_settings("coding_rate", 6)
 rfm9x.encryption_key = bytes.fromhex(get_settings("encryption_key","0123456789ABCDEF0123456789ABCDEF"))
 
 # 128x32 OLED Display
