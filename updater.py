@@ -48,23 +48,26 @@ def check_screen(name):
 
 if __name__ == "__main__":
   while True:
-    settings = load_settings()
-    repo_owner = settings.get('github_username', '')
-    repo_name = settings.get('repo_name', '')
-    last_commit = settings.get('last_commit', '')
-    
-    #Check git for updates,  if exists, download and kill script to allow restart to start new code
-    latest_commit_sha = check_for_updates(repo_owner, repo_name, last_commit)
-    if latest_commit_sha:
-      git_pull()
-
-      settings['last_commit'] = latest_commit_sha
-      save_settings(settings)
-
-      stop_screen("LoRa")
-
-    # restart
-    if not check_screen("LoRa"):
-      start_screen("LoRa","/opt/lora/git/LoRa.sh")
-
-    time.sleep(300)
+    try:
+      settings = load_settings()
+      repo_owner = settings.get('github_username', '')
+      repo_name = settings.get('repo_name', '')
+      last_commit = settings.get('last_commit', '')
+      
+      #Check git for updates,  if exists, download and kill script to allow restart to start new code
+      latest_commit_sha = check_for_updates(repo_owner, repo_name, last_commit)
+      if latest_commit_sha:
+        git_pull()
+  
+        settings['last_commit'] = latest_commit_sha
+        save_settings(settings)
+  
+        stop_screen("LoRa")
+  
+      # restart
+      if not check_screen("LoRa"):
+        start_screen("LoRa","/opt/lora/git/LoRa.sh")
+  
+      time.sleep(300)
+    except UnicodeDecodeError as e:
+      print(f"Error: {e}")
